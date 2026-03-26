@@ -53,6 +53,16 @@
           <span>Užsakymai</span>
         </NuxtLink>
 
+        <!-- New query shortcut -->
+        <NuxtLink to="/buyer/queries/new" class="nav-item mt-2 flex items-center gap-2 cursor-pointer"
+          :class="$route.path === '/buyer/queries/new' ? 'nav-active' : ''"
+          style="background:#F0FDF4; border:1px solid #BBF7D0; color:#14A34A; font-weight:600;">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+          <span>Nauja užklausa</span>
+        </NuxtLink>
+
         <p class="text-[10px] font-semibold uppercase tracking-wider px-2.5 mb-1.5 mt-4" style="color:#94A3B8;">Kita</p>
 
         <NuxtLink to="/buyer/settings" class="nav-item" :class="$route.path.startsWith('/buyer/settings') ? 'nav-active' : ''">
