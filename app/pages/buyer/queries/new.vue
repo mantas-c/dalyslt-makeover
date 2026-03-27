@@ -865,7 +865,7 @@ async function decodeVehicle() {
   if (!raw) return
   decoding.value = true
   await new Promise(r => setTimeout(r, 900))
-  vehicle.value = vehicleDb[raw] ?? { vin:raw, make:'Toyota', model:'Corolla 1.6i', year:2018, engine:'1.6i', power:'132 AG', body:'Sedanas', color:'#B0B0B0', colorName:'Silver', colorBg:'#F1F5F9', colorAccent:'#94A3B8' }
+  vehicle.value = vehicleDb[raw] ?? { vin:raw, make:'BMW', model:'3 Series 320d Coupé', year:2010, engine:'2.0d', power:'177 AG', body:'Kupė', color:'#F8FAFC', colorName:'Alpine White', colorBg:'#F8FAFC', colorAccent:'#CBD5E1' }
   decoding.value = false
 }
 
