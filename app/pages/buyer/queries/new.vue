@@ -574,42 +574,51 @@
       </div>
 
       <!-- Accordion list -->
-      <div class="flex-1 overflow-y-auto py-2">
+      <div class="flex-1 overflow-y-auto px-3 py-3" style="display:flex; flex-direction:column; gap:6px;">
         <div v-for="(pd, idx) in partDetails" :key="pd.id"
-          class="border-b" style="border-color:#F1F5F9;">
+          class="accordion-card rounded-xl overflow-hidden transition-all duration-200"
+          :style="expandedPartId===pd.id
+            ? 'background:#fff; border:1px solid #3B82F6; box-shadow:0 0 0 3px rgba(59,130,246,0.08), 0 2px 8px rgba(0,0,0,0.07);'
+            : 'background:#fff; border:1px solid #E2E8F0; box-shadow:0 1px 3px rgba(0,0,0,0.04);'">
 
           <!-- Summary row (always visible) -->
-          <div class="flex items-center gap-2.5 px-4 py-3 cursor-pointer select-none accordion-row"
-            :style="expandedPartId===pd.id ? 'background:#F8FAFC;' : 'background:#fff;'"
+          <div class="flex items-center gap-2.5 px-4 py-3 cursor-pointer select-none"
             @click="expandedPartId = expandedPartId===pd.id ? null : pd.id">
+
+            <!-- Left accent bar when expanded -->
+            <div class="w-1 self-stretch rounded-full flex-shrink-0 transition-all"
+              :style="expandedPartId===pd.id ? 'background:#3B82F6;' : 'background:transparent;'"></div>
 
             <!-- Severity dot -->
             <div class="w-2 h-2 rounded-full flex-shrink-0"
               :style="pd.severity==='major' ? 'background:#EF4444;' : pd.severity==='medium' ? 'background:#F59E0B;' : 'background:#22C55E;'"></div>
 
-            <!-- Part name + AI -->
-            <div class="flex items-center gap-1.5 min-w-0" style="flex:1 1 110px;">
-              <p class="text-sm font-semibold truncate" style="color:#0F172A;">{{ pd.label }}</p>
-              <span v-if="aiIds.has(pd.id)" class="text-[8px] font-bold px-1 py-0.5 rounded flex-shrink-0" style="background:#EEF2FF; color:#6366F1;">AI</span>
+            <!-- Part name + AI + severity label -->
+            <div class="flex flex-col min-w-0" style="flex:1 1 100px;">
+              <div class="flex items-center gap-1.5">
+                <p class="text-sm font-bold truncate" style="color:#0F172A;">{{ pd.label }}</p>
+                <span v-if="aiIds.has(pd.id)" class="text-[8px] font-bold px-1 py-0.5 rounded flex-shrink-0" style="background:#EEF2FF; color:#6366F1;">AI</span>
+              </div>
+              <p class="text-[10px]" :style="pd.severity==='major' ? 'color:#EF4444;' : pd.severity==='medium' ? 'color:#F59E0B;' : 'color:#22C55E;'">
+                {{ pd.severity==='major' ? 'Didelė žala' : pd.severity==='medium' ? 'Vidutinė' : 'Smulki žala' }}
+              </p>
             </div>
 
-            <!-- Price range -->
-            <span class="text-xs font-semibold flex-shrink-0" style="color:#0F172A; min-width:68px; text-align:right;">
-              €{{ Math.min(...(partOffers[pd.id]??[]).map(o=>o.price)) }}–{{ Math.max(...(partOffers[pd.id]??[]).map(o=>o.price)) }}
-            </span>
-
-            <!-- Seller count -->
-            <span class="text-[11px] flex-shrink-0 hidden sm:block" style="color:#64748B; min-width:44px; text-align:center;">
-              {{ (partOffers[pd.id]??[]).length }} tiek.
-            </span>
+            <!-- Price range + seller count -->
+            <div class="flex flex-col items-end flex-shrink-0" style="min-width:72px;">
+              <span class="text-xs font-bold" style="color:#0F172A;">€{{ Math.min(...(partOffers[pd.id]??[]).map(o=>o.price)) }}–{{ Math.max(...(partOffers[pd.id]??[]).map(o=>o.price)) }}</span>
+              <span class="text-[10px]" style="color:#94A3B8;">{{ (partOffers[pd.id]??[]).length }} tiekėjai</span>
+            </div>
 
             <!-- Selected offer badge -->
-            <div class="flex items-center gap-1 flex-shrink-0" style="min-width:64px; justify-content:flex-end;">
+            <div class="flex items-center gap-1 flex-shrink-0 pl-2" style="border-left:1px solid #F1F5F9;">
               <template v-if="selectedOffers[pd.id]">
-                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded" :style="conditionStyle((partOffers[pd.id]??[]).find(o=>o.id===selectedOffers[pd.id])?.condition??'oem')">
-                  {{ (partOffers[pd.id]??[]).find(o=>o.id===selectedOffers[pd.id])?.conditionLt }}
-                </span>
-                <span class="text-xs font-black" style="color:#14A34A;">€{{ (partOffers[pd.id]??[]).find(o=>o.id===selectedOffers[pd.id])?.price }}</span>
+                <div class="flex flex-col items-end">
+                  <span class="text-[9px] font-bold px-1.5 py-0.5 rounded mb-0.5" :style="conditionStyle((partOffers[pd.id]??[]).find(o=>o.id===selectedOffers[pd.id])?.condition??'oem')">
+                    {{ (partOffers[pd.id]??[]).find(o=>o.id===selectedOffers[pd.id])?.conditionLt }}
+                  </span>
+                  <span class="text-sm font-black" style="color:#14A34A;">€{{ (partOffers[pd.id]??[]).find(o=>o.id===selectedOffers[pd.id])?.price }}</span>
+                </div>
               </template>
               <template v-else>
                 <span class="text-[10px]" style="color:#CBD5E1;">—</span>
@@ -617,62 +626,71 @@
             </div>
 
             <!-- Chevron -->
-            <svg class="w-4 h-4 flex-shrink-0 transition-transform duration-200" :style="expandedPartId===pd.id ? 'color:#3B82F6; transform:rotate(180deg);' : 'color:#CBD5E1;'"
+            <svg class="w-4 h-4 flex-shrink-0 transition-transform duration-200 ml-1" :style="expandedPartId===pd.id ? 'color:#3B82F6; transform:rotate(180deg);' : 'color:#CBD5E1;'"
               fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
             </svg>
           </div>
 
           <!-- Expanded offer rows -->
-          <div v-if="expandedPartId===pd.id" style="background:#FAFAFA; border-top:1px solid #F1F5F9;">
+          <div v-if="expandedPartId===pd.id" style="border-top:1px solid #EFF6FF; background:#F8FAFF;">
 
             <!-- Column headers -->
-            <div class="flex items-center gap-2 px-4 py-1.5" style="border-bottom:1px solid #F1F5F9;">
-              <span class="text-[9px] font-bold uppercase tracking-wide" style="color:#94A3B8; flex:0 0 88px;">Tipas</span>
-              <span class="text-[9px] font-bold uppercase tracking-wide flex-1" style="color:#94A3B8;">Tiekėjas</span>
-              <span class="text-[9px] font-bold uppercase tracking-wide" style="color:#94A3B8; width:52px; text-align:right;">Kaina</span>
-              <span class="text-[9px] font-bold uppercase tracking-wide" style="color:#94A3B8; width:40px; text-align:center;">Pristat.</span>
-              <span class="text-[9px] font-bold uppercase tracking-wide" style="color:#94A3B8; width:64px; text-align:center;">Sandėlis</span>
-              <span style="width:40px;"></span>
+            <div class="flex items-center gap-2 px-3 py-1.5" style="border-bottom:1px solid #EFF6FF;">
+              <span class="text-[9px] font-bold uppercase tracking-wider" style="color:#94A3B8; width:60px; flex-shrink:0;">Tipas</span>
+              <span class="text-[9px] font-bold uppercase tracking-wider" style="color:#94A3B8; flex:1; min-width:0;">Tiekėjas</span>
+              <span class="text-[9px] font-bold uppercase tracking-wider" style="color:#94A3B8; width:50px; flex-shrink:0; text-align:right;">Kaina</span>
+              <span class="text-[9px] font-bold uppercase tracking-wider" style="color:#94A3B8; width:64px; flex-shrink:0; text-align:center;">Pristat. / Sandėlis</span>
+              <span style="width:24px; flex-shrink:0;"></span>
             </div>
 
-            <!-- One row per offer -->
+            <!-- One row per offer — click whole row to open preview -->
             <div v-for="offer in (partOffers[pd.id]??[])" :key="offer.id"
-              class="offer-row flex items-center gap-2 px-4 py-2.5 cursor-pointer transition-colors"
-              :style="selectedOffers[pd.id]===offer.id ? 'background:#F0FDF4;' : 'background:transparent;'"
-              @click="selectOffer(pd.id, offer.id)">
+              class="offer-row flex items-center gap-2 px-3 py-2.5 cursor-pointer transition-all"
+              :style="selectedOffers[pd.id]===offer.id
+                ? 'background:#F0FDF4; border-left:3px solid #14A34A;'
+                : 'background:transparent; border-left:3px solid transparent;'"
+              @click="openOffer(offer, pd.id)">
 
               <!-- Condition badge -->
-              <span class="text-[9px] font-bold px-1.5 py-0.5 rounded flex-shrink-0" :style="conditionStyle(offer.condition)" style="flex:0 0 88px; text-align:center; display:block;">{{ offer.conditionLt }}</span>
+              <div class="flex-shrink-0" style="width:60px;">
+                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded" :style="conditionStyle(offer.condition)">{{ offer.conditionLt }}</span>
+              </div>
 
-              <!-- Supplier + donor mileage -->
-              <div class="flex items-center gap-1.5 flex-1 min-w-0">
-                <div class="w-5 h-5 rounded flex items-center justify-center text-[8px] font-bold flex-shrink-0" style="background:#1E293B; color:#fff;">{{ offer.supplierInitials }}</div>
-                <div class="min-w-0">
-                  <p class="text-xs font-semibold truncate" style="color:#0F172A;">{{ offer.supplierName }}</p>
-                  <p v-if="offer.donorVehicle" class="text-[9px] truncate" style="color:#94A3B8;">{{ offer.donorVehicle.model }} · {{ Math.round(offer.donorVehicle.mileage/1000) }}k km · {{ offer.donorVehicle.colorName }}</p>
-                  <p v-else class="text-[9px]" style="color:#94A3B8;">★ {{ offer.supplierRating }} · {{ offer.supplierReviews }} atsiliepimai</p>
+              <!-- Supplier + donor info -->
+              <div class="flex items-center gap-1.5 overflow-hidden" style="flex:1; min-width:0;">
+                <div class="w-6 h-6 rounded-md flex items-center justify-center text-[8px] font-bold flex-shrink-0" style="background:#1E293B; color:#fff;">{{ offer.supplierInitials }}</div>
+                <div style="min-width:0; overflow:hidden;">
+                  <p style="color:#0F172A; font-size:11px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    {{ offer.supplierName }} <span style="color:#F59E0B; font-weight:400;">★{{ offer.supplierRating }}</span>
+                  </p>
+                  <p style="color:#64748B; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    <template v-if="offer.donorVehicle">{{ offer.donorVehicle.make }} {{ offer.donorVehicle.model }} · {{ offer.donorVehicle.year }} · {{ Math.round(offer.donorVehicle.mileage/1000) }}k km</template>
+                    <template v-else>{{ offer.supplierReviews }} atsil. · CE sert.</template>
+                  </p>
                 </div>
               </div>
 
               <!-- Price -->
-              <span class="text-sm font-black flex-shrink-0" :style="selectedOffers[pd.id]===offer.id ? 'color:#14A34A;' : 'color:#0F172A;'" style="width:52px; text-align:right;">€{{ offer.price }}</span>
+              <div class="flex-shrink-0 text-right" style="width:50px;">
+                <p style="font-size:13px; font-weight:900;" :style="selectedOffers[pd.id]===offer.id ? 'color:#14A34A;' : 'color:#0F172A;'">€{{ offer.price }}</p>
+              </div>
 
-              <!-- Delivery -->
-              <span class="text-[10px] flex-shrink-0" style="color:#64748B; width:40px; text-align:center;">{{ offer.delivery }}d.d.</span>
+              <!-- Delivery + stock combined -->
+              <div class="flex-shrink-0 text-center" style="width:64px;">
+                <p style="font-size:11px; font-weight:600; color:#0F172A;">{{ offer.delivery }}d.d.</p>
+                <span style="font-size:9px; font-weight:600; padding:1px 4px; border-radius:4px; display:inline-block;"
+                  :style="offer.stock==='in_stock' ? 'background:#DCFCE7; color:#14A34A;' : offer.stock==='low_stock' ? 'background:#FFFBEB; color:#D97706;' : 'background:#F1F5F9; color:#64748B;'">
+                  {{ offer.stock==='in_stock' ? '✓ Yra' : offer.stock==='low_stock' ? '⚠ Mažai' : '↻ Užsak.' }}
+                </span>
+              </div>
 
-              <!-- Stock -->
-              <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0" style="width:64px; text-align:center;"
-                :style="offer.stock==='in_stock' ? 'background:#F0FDF4; color:#14A34A;' : offer.stock==='low_stock' ? 'background:#FFFBEB; color:#D97706;' : 'background:#F1F5F9; color:#64748B;'">
-                {{ offer.stock==='in_stock' ? '✓ Yra' : offer.stock==='low_stock' ? '⚠ Mažai' : '↻ Užsak.' }}
-              </span>
-
-              <!-- Detail link + radio -->
-              <div class="flex items-center gap-2 flex-shrink-0" style="width:40px; justify-content:flex-end;">
-                <button @click.stop="openOffer(offer, pd.id)" class="text-[10px] cursor-pointer transition-colors" style="color:#3B82F6;" title="Daugiau informacijos">↗</button>
-                <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
+              <!-- Radio select (click.stop — only selects, doesn't open preview) -->
+              <div class="flex-shrink-0" style="width:28px; display:flex; justify-content:center;">
+                <div @click.stop="selectOffer(pd.id, offer.id)"
+                  class="w-5 h-5 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all"
                   :style="selectedOffers[pd.id]===offer.id ? 'border-color:#14A34A; background:#14A34A;' : 'border-color:#CBD5E1; background:#fff;'">
-                  <div v-if="selectedOffers[pd.id]===offer.id" class="w-1.5 h-1.5 rounded-full" style="background:#fff;"></div>
+                  <div v-if="selectedOffers[pd.id]===offer.id" class="w-2 h-2 rounded-full" style="background:#fff;"></div>
                 </div>
               </div>
             </div>
@@ -1278,6 +1296,6 @@ function resetWizard() {
 .animate-spin-slow { animation: spin-slow 2s linear infinite; }
 .offer-card { transition: box-shadow 0.15s ease; }
 .offer-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
-.accordion-row:hover { background: #F8FAFC !important; }
-.offer-row:hover { background: #F8FAFC !important; }
+.accordion-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.08) !important; }
+.offer-row:hover { background: #EFF6FF !important; }
 </style>
